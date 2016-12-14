@@ -32,7 +32,10 @@ library(tidyverse)
 # data --------------------------------------------------------------------
 
 
-# enter data here
+# there are several ways to pull data in here. 
+
+# 1. generate fake data to demonstrate the required structure of the data frame
+
 # conform to this structure of group, trial type, D scores, errors.
 # NB trial types are named further below
 data_to_plot <- data.frame(Group = factor(c("Men", "Men", "Men", "Men", "Women", "Women", "Women", "Women")),
@@ -40,16 +43,63 @@ data_to_plot <- data.frame(Group = factor(c("Men", "Men", "Men", "Men", "Women",
                            mean_D1 = c(0.1, 0.5, 0.3, 0.4, 0.4, 0.3, 0.6, 0.2),
                            errors_D1 = c(0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3))  # could be SE or 95% CI (preferable)
 
-# optionally, view this data so that you can see the required structure
+# you can view this data so that you can see the required structure
 #View(data_to_plot)  
 
-# optionally, write this data to disk so that you can see the required data structure. 
+# or write this data to disk so that you can see the required data structure. 
 #write.csv(data_to_plot, file = "~/Desktop/demo_data.csv")  # Mac OS
 #write.csv(data_to_plot, file = file = "c:/mydocuments/Desktop/demo_data.csv")  # windows
 
-# optionally, read in your own csv file containing conditions, means and errors for plotting.
+
+
+# 2. assuming you can calculate means and errors (SE or CI widths) from your data, 
+# you can put these in csv file that conforms to the above format and read them in here.
+
 #data_to_plot <- read.csv("~/Desktop/demo_data.csv")  # Mac OS
 #data_to_plot <- read.csv("c:/mydocuments/Desktop/demo_data.csv")  # windows
+
+
+
+# 3. read in your participant level data, and the below will extract the group, means and CI widths 
+# and put them in the right format.
+# NB you must include a group identifier column (currently "gender" below), D_tt1, D_tt2, D_tt3, D_tt4
+# and an outlier column
+
+#input_data <- read.csv("~/Desktop/demo_data.csv")  # Mac OS
+#input_data <- read.csv("c:/mydocuments/Desktop/demo_data.csv")  # windows
+# 
+# data_to_plot_1 <-
+#   input_data %>%
+#   rename(Group = gender) %>%  # set your grouping variable here
+#   filter(!is.na(D_tt1) | !is.na(D_tt2) | !is.na(D_tt3) | !is.na(D_tt1) | !is.na(Group)) %>%  # remove rows with missing data
+#   group_by(Group) %>%
+#   summarize(mean_D_tt1 = mean(D_tt1),
+#             mean_D_tt2 = mean(D_tt2),
+#             mean_D_tt3 = mean(D_tt3),
+#             mean_D_tt4 = mean(D_tt4)) %>%
+#   gather(trialtype, mean_D1, c(mean_D_tt1, mean_D_tt2, mean_D_tt3, mean_D_tt4)) %>%
+#   mutate(trialtype = ifelse(trialtype == "mean_D_tt1", 1,
+#                             ifelse(trialtype == "mean_D_tt2", 2,
+#                                    ifelse(trialtype == "mean_D_tt3", 3,
+#                                           ifelse(trialtype == "mean_D_tt4", 4, NA))))) %>%
+#   rownames_to_column()
+# 
+# data_to_plot_2 <-
+#   input_data %>%
+#   rename(Group = gender) %>%
+#   filter(!is.na(D_tt1) | !is.na(D_tt2) | !is.na(D_tt3) | !is.na(D_tt1) | !is.na(Group)) %>%  # remove rows with missing data
+#   group_by(Group) %>%
+#   summarize(se_D_tt1 = 1.96*sd(D_tt1)/sqrt(length(D_tt1)),  # returns 95% CI interval width. Remove "1.96*" for standard error
+#             se_D_tt2 = 1.96*sd(D_tt2)/sqrt(length(D_tt2)),
+#             se_D_tt3 = 1.96*sd(D_tt3)/sqrt(length(D_tt3)),
+#             se_D_tt4 = 1.96*sd(D_tt4)/sqrt(length(D_tt4))) %>%
+#   gather(trialtype, errors_D1, c(se_D_tt1, se_D_tt2, se_D_tt3, se_D_tt4)) %>%
+#   select(-trialtype, -Group) %>%
+#   rownames_to_column()
+# 
+# data_to_plot <-
+#   left_join(data_to_plot_1, data_to_plot_2, by = "rowname") %>%
+#   select(-rowname)
 
 
 # optinally define strict apa theme ---------------------------------------
@@ -80,6 +130,7 @@ ggplot(data_to_plot,
        aes(colour = Group, 
            y = mean_D1, 
            x = trialtype)) + 
+  ylim(-.5, 1) +  # set limits of Y axis here
   geom_point(position = dodge) + 
   geom_errorbar(limits, 
                 width = 0.3, 
