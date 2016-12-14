@@ -32,6 +32,8 @@ library(tidyverse)
 # data --------------------------------------------------------------------
 
 
+setwd("~/git/plotting-and-visualisation-templates/")
+
 # there are several ways to pull data in here. 
 
 # 1. generate fake data to demonstrate the required structure of the data frame
@@ -99,7 +101,8 @@ data_to_plot <- data.frame(Group = factor(c("Men", "Men", "Men", "Men", "Women",
 # 
 # data_to_plot <-
 #   left_join(data_to_plot_1, data_to_plot_2, by = "rowname") %>%
-#   select(-rowname)
+#   select(-rowname) %>%
+#   mutate(trialtype = as.factor(trialtype))
 
 
 # optinally define strict apa theme ---------------------------------------
@@ -131,23 +134,23 @@ ggplot(data_to_plot,
            y = mean_D1, 
            x = trialtype)) + 
   ylim(-.5, 1) +  # set limits of Y axis here
-  geom_point(position = dodge) + 
+  geom_point(shape = 15,  # squares for points
+             position = dodge) + 
   geom_errorbar(limits, 
                 width = 0.3, 
                 position = dodge) +
   theme_classic() +  # employs a sans serif font. If you want stict APA format, comment out this line and uncomment apatheme below.
   #apatheme +
   scale_color_grey() +  # greyscale colours
-  xlab("Trial type") +
   ylab(expression("Mean " ~ italic("D")[IRAP] ~ "scores")) +  # use some expressions magic to include subscript and italics
-  scale_x_discrete(labels=c("1" = "men\nmaculine",  # Name trial types here. NB "\n" creates a new line so that captions are readable
-                            "2" = "men\nfeminine",
-                            "3" = "women\nmasculine",
-                            "4" = "women\nfeminine"))
+  scale_x_discrete("Trial type",
+                   labels=c("1" = "men are\nmaculine",  # Name trial types here. NB "\n" creates a new line so that captions are readable
+                            "2" = "men are\nfeminine",
+                            "3" = "women are\nmasculine",
+                            "4" = "women are\nfeminine"))
   
 # save plot to disk
-ggsave("IRAP trial type plot.pdf",
-       path = "~/Desktop/",  # Mac OS
+ggsave("Point and error bar plot.pdf",
        #path = "c:/mydocuments/Desktop/"  # windows
        device = "pdf",  # saves a PDF that is sized to fit Elsevier's 1.5 column width standard, ready for submission.
        width = 14,  
